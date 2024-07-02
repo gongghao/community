@@ -1,5 +1,6 @@
 package com.summer.community.controller;
 
+import com.summer.community.annotation.LoginRequired;
 import com.summer.community.entity.User;
 import com.summer.community.mapper.DiscussPostMapper;
 import com.summer.community.mapper.UserMapper;
@@ -51,11 +52,13 @@ public class UserController {
     @Autowired
     private HostHolder hostHolder;
 
+    @LoginRequired
     @RequestMapping(path = "/setting", method = RequestMethod.GET)
     public String getSettingPage() {
         return "/site/setting";
     }
 
+    @LoginRequired
     @RequestMapping(path = "/upload", method = RequestMethod.POST)
     public String uploadHeader(MultipartFile headerImage, Model model) {
         if (headerImage == null) {
