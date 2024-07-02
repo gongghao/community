@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Version: java version 20
@@ -101,6 +102,23 @@ public class UserController {
             }
         } catch (IOException e) {
             logger.error("读取头像失败" + e.getMessage());
+        }
+    }
+
+    @RequestMapping(path = "/changePassword", method = RequestMethod.POST)
+    public String changePassword(String old_password,String new_password, Model model)
+    {
+        User user = hostHolder.getUser();
+        Map<String, Object> map = userService.changePassword(user, old_password, new_password);
+        if(map == null || map.isEmpty())
+        {
+            model.addAttribute("msg", "Password changed successfully!");
+            return "redirect:/index";
+        }
+        else {
+            model.addAttribute("oldMsg", map.get("oldMsg"));
+            model.addAttribute("newMsg", map.get("newMsg"));
+            return "/site/setting";
         }
     }
 }

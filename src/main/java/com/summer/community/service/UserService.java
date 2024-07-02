@@ -186,9 +186,41 @@ public class UserService implements CommunityConstant {
         loginTickerMapper.update(loginTicket, queryWrapper);
     }
 
-    public int updateHeader(int userId, String headerUrl){
+    public int updateHeader(int userId, String headerUrl) {
         User user = userMapper.selectById(userId);
         user.setHeaderUrl(headerUrl);
         return userMapper.updateById(user);
+    }
+
+    public Map<String, Object> changePassword(User user, String old_password, String new_password) {
+        Map<String, Object> map = new HashMap<>();
+        //deal with empty
+        if (user == null)
+            throw new IllegalArgumentException("Param is Empty!");
+        else if (StringUtils.isBlank(old_password)) {
+            map.put("oldMsg", "原密码为空");
+            return map;
+        } else if (StringUtils.isBlank(new_password)) {
+            map.put("newMsg", "新密码为空");
+            return map;
+        }
+
+        // validate user
+        String password = CommunityUtil.md5(old_password + user.getSalt());
+        if (!password.equals(user.getPassword())) {
+            map.put("oldMsg", "password error");
+            return map;
+        }
+        if (new_password.equals(old_password)) {
+            map.put("newMsg", "two passwords cannot be the same!");
+            return map;
+        }
+
+        // change password
+        user.setSalt(CommunityUtil.generateUUID().substring(0, 5));
+        user.setPassword(CommunityUtil.md5(new_password + user.getSalt()));
+        userMapper.updateById(user);
+        
+        return map;
     }
 }
