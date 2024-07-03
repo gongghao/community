@@ -1,8 +1,11 @@
 package com.summer.community;
 
+import com.summer.community.entity.DiscussPost;
 import com.summer.community.entity.User;
 import com.summer.community.mapper.DiscussPostMapper;
 import com.summer.community.mapper.UserMapper;
+import com.summer.community.service.DiscussPostService;
+import com.summer.community.service.UserService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +13,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Version: java version 20
@@ -25,20 +31,40 @@ public class MapperTests {
 
     @Autowired
     private UserMapper userMapper;
+
     @Autowired
-    private DiscussPostMapper discussPostMapper;
+    private UserService userService;
+
+    @Autowired
+    private DiscussPostService discussPostService;
 
     @Test
-    public void testSelectUser()
-    {
+    public void testSelectUser() {
         List<User> list = userMapper.selectList(null);
         System.out.println(list);
     }
 
     @Test
-    public void testSelectPosts()
-    {
+    public void testSelectPosts() {
+        List<DiscussPost> list = discussPostService.findDisscussPost(5, 0, 10);
+        for (DiscussPost post : list)
+            System.out.println(post);
+    }
 
+    @Test
+    public void testReturnPosts() {
+        List<DiscussPost> list = discussPostService.findDisscussPost(0, 0, 1);
+        List<Map<String, Object>> discussPosts = new ArrayList<>();
+        if (list != null && !list.isEmpty()) {
+            for (DiscussPost post : list) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("post", post);
+                User user = userService.findUserById(post.getUserId());
+                map.put("user", user);
+                discussPosts.add(map);
+                System.out.println(map);
+            }
+        }
     }
 
 }

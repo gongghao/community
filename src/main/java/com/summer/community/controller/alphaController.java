@@ -157,4 +157,12 @@ public class alphaController {
         session.setAttribute("name", "test");
         return "set session";
     }
+    
+    @RequestMapping(path = "/ajax", method = RequestMethod.POST)
+    @ResponseBody
+    public String testAjax(String name, int age){
+        System.out.println(name);
+        System.out.println(age);
+        return CommunityUtil.getJSONString(0, "操作成功");
+    }
 }

@@ -3,8 +3,10 @@ package com.summer.community.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.summer.community.entity.DiscussPost;
 import com.summer.community.mapper.DiscussPostMapper;
+import com.summer.community.util.SensitiveFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 
 import java.util.List;
 
@@ -19,13 +21,18 @@ public class DiscussPostService {
     @Autowired
     private DiscussPostMapper discussPostMapper;
 
+    @Autowired
+    private SensitiveFilter sensitiveFilter;
+
     public List<DiscussPost> findDisscussPost(int userId, int offset, int limit) {
         QueryWrapper<DiscussPost> queryWrapper = new QueryWrapper<>();
-        queryWrapper.ne("status", 2).ne("user_id", 0);
-        queryWrapper.eq("user_id", userId);
+        queryWrapper.ne("status", 2);
+        if (userId != 0)
+            queryWrapper.eq("user_id", userId);
         queryWrapper.orderByDesc("create_time");
+        queryWrapper.orderByDesc("type");
         List<DiscussPost> discussPostList = discussPostMapper.selectList(queryWrapper);
-        if(discussPostList.size() >= offset + limit)
+        if (discussPostList.size() >= offset + limit)
             discussPostList.subList(offset, offset + limit);
         else
             discussPostList.subList(offset, discussPostList.size());
@@ -34,9 +41,25 @@ public class DiscussPostService {
 
     public int findDiscussPostRows(int userId) {
         QueryWrapper<DiscussPost> queryWrapper = new QueryWrapper<>();
-        queryWrapper.ne("user_id", 0);
-        queryWrapper.eq("user_id", userId);
+        queryWrapper.ne("status", 2);
+        if (userId != 0)
+            queryWrapper.eq("user_id", userId);
         List<DiscussPost> disscussPostList = discussPostMapper.selectList(queryWrapper);
         return disscussPostList.size();
+    }
+
+    public int addDiscussPost(DiscussPost post) {
+        if (post == null)
+            throw new IllegalArgumentException("参数不能为空!");
+
+        // 转义HTML标记
+        post.setTitle(HtmlUtils.htmlEscape(post.getTitle()));
+        post.setContent(HtmlUtils.htmlEscape(post.getContent()));
+
+        // 过滤敏感词
+        post.setTitle(sensitiveFilter.filter(post.getTitle()));
+        post.setContent(sensitiveFilter.filter(post.getContent()));
+
+        return discussPostMapper.insert(post);
     }
 }

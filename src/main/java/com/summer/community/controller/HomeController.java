@@ -52,22 +52,4 @@ public class HomeController {
         model.addAttribute("discussPosts", discussPosts);
         return "/index";
     }
-
-//    @GetMapping("/findPost")
-//    public List findPost()
-//    {
-//        List<DiscussPost> list = discussPostService.findDisscussPost(0, 0, 1);
-//        List<Map<String, Object>> discussPosts = new ArrayList<>();
-//        if (list != null && !list.isEmpty()) {
-//            for (DiscussPost post : list) {
-//                Map<String, Object> map = new HashMap<>();
-//                map.put("post", post);
-//                User user = userService.findUserById(post.getUserId());
-//                map.put("user", user);
-//                discussPosts.add(map);
-//            }
-//        }
-//        return list;
-//    }
-
 }

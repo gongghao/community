@@ -77,7 +77,7 @@
                     </li>
                 </ul>
                 <button type="button" class="btn btn-primary btn-sm position-absolute rt-0" data-toggle="modal"
-                        data-target="#publishModal">我要发布
+                        data-target="#publishModal" th:if="${loginUser!=null}">我要发布
                 </button>
             </div>
             <!-- 弹出框 -->
@@ -127,7 +127,7 @@
 
             <!-- 帖子列表 -->
             <ul class="list-unstyled">
-                <li class="media pb-3 pt-3 mb-3 border-bottom" th:each="map:${discussPosts}">
+                <li class="media pb-3 pt-3 mb-3 border-bottom" th:each="map : ${discussPosts}">
                     <a href="site/profile.html">
                         <img th:src="${map.user.headerUrl}" class="mr-4 rounded-circle" alt="用户头像"
                              style="width:50px;height:50px;">
