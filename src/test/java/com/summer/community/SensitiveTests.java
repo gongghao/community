@@ -27,5 +27,9 @@ public class SensitiveTests {
         String text = "这里可以赌博";
         text = sensitiveFilter.filter(text);
         System.out.println(text);
+        text = "这里可以赌❤博";
+        text = sensitiveFilter.filter(text);
+        System.out.println(text);
     }
+
 }
