@@ -62,4 +62,9 @@ public class DiscussPostService {
 
         return discussPostMapper.insert(post);
     }
+
+    public DiscussPost findDiscussPostById(int id){
+        return discussPostMapper.selectById(id);
+    }
+
 }
