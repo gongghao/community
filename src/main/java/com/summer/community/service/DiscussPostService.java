@@ -31,12 +31,12 @@ public class DiscussPostService {
             queryWrapper.eq("user_id", userId);
         queryWrapper.orderByDesc("create_time");
         queryWrapper.orderByDesc("type");
-        List<DiscussPost> discussPostList = discussPostMapper.selectList(queryWrapper);
-        if (discussPostList.size() >= offset + limit)
-            discussPostList.subList(offset, offset + limit);
-        else
-            discussPostList.subList(offset, discussPostList.size());
-        return discussPostList;
+        queryWrapper.last("limit " + String.valueOf(offset) + ", " + String.valueOf(limit));
+        return discussPostMapper.selectList(queryWrapper);
+//        if (discussPostList.size() >= offset + limit)
+//            discussPostList.subList(offset, offset + limit);
+//        else
+//            discussPostList.subList(offset, discussPostList.size());
     }
 
     public int findDiscussPostRows(int userId) {
@@ -63,7 +63,7 @@ public class DiscussPostService {
         return discussPostMapper.insert(post);
     }
 
-    public DiscussPost findDiscussPostById(int id){
+    public DiscussPost findDiscussPostById(int id) {
         return discussPostMapper.selectById(id);
     }
 
