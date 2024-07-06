@@ -67,4 +67,10 @@ public class DiscussPostService {
         return discussPostMapper.selectById(id);
     }
 
+    public int updateCommentCount(int id, int commentCount) {
+        DiscussPost post = discussPostMapper.selectById(id);
+        post.setCommentCount(commentCount);
+        return discussPostMapper.updateById(post);
+    }
+
 }

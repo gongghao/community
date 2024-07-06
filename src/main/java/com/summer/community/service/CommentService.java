@@ -3,10 +3,19 @@ package com.summer.community.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.summer.community.entity.Comment;
 import com.summer.community.mapper.CommentMapper;
+import com.summer.community.util.CommunityConstant;
+import com.summer.community.util.SensitiveFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.HtmlUtils;
 
+import javax.swing.text.html.HTML;
 import java.util.List;
+
+import static com.summer.community.util.CommunityConstant.ENTITY_TYPE_POST;
 
 /**
  * @Version: java version 20
@@ -18,6 +27,12 @@ public class CommentService {
 
     @Autowired
     private CommentMapper commentMapper;
+
+    @Autowired
+    private SensitiveFilter sensitiveFilter;
+
+    @Autowired
+    private DiscussPostService discussPostService;
 
     public List<Comment> findCommentsByEntity(int entityType, int entityId, int offset, int limit) {
         QueryWrapper queryWrapper = new QueryWrapper();
@@ -36,5 +51,30 @@ public class CommentService {
         queryWrapper.eq("entity_id", entityId);
         List<Comment> list = commentMapper.selectList(queryWrapper);
         return list.size();
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRED)
+    public int addComment(Comment comment) {
+        if (comment == null) {
+            throw new IllegalArgumentException("参数不能为空");
+        }
+
+        // 添加评论
+        comment.setContent(HtmlUtils.htmlEscape(comment.getContent()));
+        comment.setContent(sensitiveFilter.filter(comment.getContent()));
+
+        commentMapper.insert(comment);
+        int rows = commentMapper.selectCount(null);
+
+        // 更新帖子评论数量
+        if (comment.getEntityType() == ENTITY_TYPE_POST) {
+            QueryWrapper<Comment> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("entity_type", ENTITY_TYPE_POST);
+            queryWrapper.eq("entity_id", comment.getEntityId());
+            int count = commentMapper.selectCount(queryWrapper);
+            discussPostService.updateCommentCount(comment.getEntityId(), count);
+        }
+
+        return rows;
     }
 }

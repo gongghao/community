@@ -12,9 +12,15 @@ import java.util.Date;
 @TableName("comment")
 public class Comment {
     private int id;
+
+    // 用户Id
     private int userId;
+
+    // 评论对象的类型
     private int entityType;
+    // 回复的评论的Id
     private int entityId;
+    // 回复的对象的用户
     private int targetId;
     private String content;
     private int status;
