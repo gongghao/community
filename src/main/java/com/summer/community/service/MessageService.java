@@ -3,9 +3,11 @@ package com.summer.community.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.summer.community.entity.Message;
 import com.summer.community.mapper.MessageMapper;
+import com.summer.community.util.SensitiveFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -21,6 +23,9 @@ public class MessageService {
 
     @Autowired
     private MessageMapper messageMapper;
+
+    @Autowired
+    private SensitiveFilter sensitiveFilter;
 
     // 查询当前用户的会话列表,针对每个会话只返回一条最新的私信
     public List<Message> findConversations(int userId, int offset, int limit) {
@@ -86,5 +91,23 @@ public class MessageService {
         return messageMapper.selectCount(queryWrapper);
     }
 
+    public int addMessage(Message message) {
+        message.setContent(HtmlUtils.htmlEscape(message.getContent()));
+        message.setContent(sensitiveFilter.filter(message.getContent()));
+        return messageMapper.insert(message);
+    }
+
+    //修改消息状态
+    public void updateStatus(List<Integer> ids, int status) {
+        for (int id : ids) {
+            Message message = messageMapper.selectById(id);
+            message.setStatus(status);
+            messageMapper.updateById(message);
+        }
+    }
+
+    public void readMessage(List<Integer> ids) {
+        updateStatus(ids, 1);
+    }
 
 }

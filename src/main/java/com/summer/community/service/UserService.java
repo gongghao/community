@@ -220,7 +220,13 @@ public class UserService implements CommunityConstant {
         user.setSalt(CommunityUtil.generateUUID().substring(0, 5));
         user.setPassword(CommunityUtil.md5(new_password + user.getSalt()));
         userMapper.updateById(user);
-        
+
         return map;
+    }
+
+    public User findUserByName(String username) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("username", username);
+        return userMapper.selectOne(queryWrapper);
     }
 }
