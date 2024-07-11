@@ -4,7 +4,9 @@ import com.summer.community.entity.DiscussPost;
 import com.summer.community.entity.Page;
 import com.summer.community.entity.User;
 import com.summer.community.service.DiscussPostService;
+import com.summer.community.service.LikeService;
 import com.summer.community.service.UserService;
+import com.summer.community.util.CommunityConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,7 +26,7 @@ import java.util.Map;
  * @date: 2024-06-28-14:34
  */
 @Controller
-public class HomeController {
+public class HomeController implements CommunityConstant {
 
     @Autowired
     private DiscussPostService discussPostService;
@@ -32,6 +34,8 @@ public class HomeController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private LikeService likeService;
 
     @RequestMapping(path = "/index", method = RequestMethod.GET)
     public String getIndexPage(Model model, Page page) {
@@ -46,6 +50,10 @@ public class HomeController {
                 map.put("post", post);
                 User user = userService.findUserById(post.getUserId());
                 map.put("user", user);
+
+                long likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_POST, post.getId());
+                map.put("likeCount", likeCount);
+
                 discussPosts.add(map);
             }
         }
@@ -54,7 +62,7 @@ public class HomeController {
     }
 
     @RequestMapping(path = "/error", method = RequestMethod.GET)
-    public String getErrorPage(){
+    public String getErrorPage() {
         return "/error/500";
     }
 }
