@@ -4,6 +4,7 @@ import com.summer.community.annotation.LoginRequired;
 import com.summer.community.entity.User;
 import com.summer.community.mapper.DiscussPostMapper;
 import com.summer.community.mapper.UserMapper;
+import com.summer.community.service.FollowService;
 import com.summer.community.service.LikeService;
 import com.summer.community.service.UserService;
 import com.summer.community.util.CommunityConstant;
@@ -34,7 +35,7 @@ import java.util.Map;
  */
 @Controller
 @RequestMapping("/user")
-public class UserController {
+public class UserController implements CommunityConstant {
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
@@ -55,6 +56,9 @@ public class UserController {
 
     @Autowired
     private LikeService likeService;
+
+    @Autowired
+    private FollowService followService;
 
     @LoginRequired
     @RequestMapping(path = "/setting", method = RequestMethod.GET)
@@ -113,16 +117,13 @@ public class UserController {
     }
 
     @RequestMapping(path = "/changePassword", method = RequestMethod.POST)
-    public String changePassword(String old_password,String new_password, Model model)
-    {
+    public String changePassword(String old_password, String new_password, Model model) {
         User user = hostHolder.getUser();
         Map<String, Object> map = userService.changePassword(user, old_password, new_password);
-        if(map == null || map.isEmpty())
-        {
+        if (map == null || map.isEmpty()) {
             model.addAttribute("msg", "Password changed successfully!");
             return "redirect:/index";
-        }
-        else {
+        } else {
             model.addAttribute("oldMsg", map.get("oldMsg"));
             model.addAttribute("newMsg", map.get("newMsg"));
             return "/site/setting";
@@ -131,17 +132,30 @@ public class UserController {
 
     // 个人主页
     @RequestMapping(path = "/profile/{userId}", method = RequestMethod.GET)
-    public String getProfilePage(@PathVariable("userId") int userId, Model model){
+    public String getProfilePage(@PathVariable("userId") int userId, Model model) {
         User user = userService.findUserById(userId);
-        if(user == null){
+        if (user == null) {
             throw new RuntimeException("该用户不存在");
         }
 
         // 用户
         model.addAttribute("user", user);
+        model.addAttribute("loginUser", hostHolder.getUser());
         // 点赞数量
         int likeCount = likeService.findUserLikeCount(userId);
         model.addAttribute("likeCount", likeCount);
+
+        // 关注数量
+        long followeeCount = followService.findFolloweeCount(userId, ENTITY_TYPE_USER);
+        model.addAttribute("followeeCount", followeeCount);
+        // 粉丝数量
+        long followerCount = followService.findFollowerCount(ENTITY_TYPE_USER, userId);
+        model.addAttribute("followerCount", followerCount);
+        // 是否已关注
+        boolean hasFollowed = false;
+        if(hostHolder.getUser() != null)
+            hasFollowed = followService.hasFollowed(hostHolder.getUser().getId(), ENTITY_TYPE_USER, userId);
+        model.addAttribute("hasFollowed", hasFollowed);
 
         return "/site/profile";
     }
