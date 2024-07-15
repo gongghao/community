@@ -1,5 +1,7 @@
 package com.summer.community.service;
 
+import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.summer.community.entity.LoginTicket;
 import com.summer.community.entity.User;
@@ -8,9 +10,11 @@ import com.summer.community.mapper.UserMapper;
 import com.summer.community.util.CommunityConstant;
 import com.summer.community.util.CommunityUtil;
 import com.summer.community.util.MailClient;
+import com.summer.community.util.RedisKeyUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
@@ -20,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Version: java version 20
@@ -32,8 +37,11 @@ public class UserService implements CommunityConstant {
     @Autowired
     private UserMapper userMapper;
 
+//    @Autowired
+//    private LoginTickerMapper loginTickerMapper;
+
     @Autowired
-    private LoginTickerMapper loginTickerMapper;
+    private RedisTemplate redisTemplate;
 
     @Autowired
     private MailClient mailClient;
@@ -48,7 +56,11 @@ public class UserService implements CommunityConstant {
     private String contextPath;
 
     public User findUserById(int userId) {
-        return userMapper.selectById(userId);
+//        return userMapper.selectById(userId);
+        User user = getCache(userId);
+        if (user == null)
+            user = initCache(userId);
+        return user;
     }
 
     private User selectByName(String username) {
@@ -64,9 +76,8 @@ public class UserService implements CommunityConstant {
     }
 
     public LoginTicket findLoginTicket(String ticket) {
-        QueryWrapper<LoginTicket> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("ticket", ticket);
-        return loginTickerMapper.selectOne(queryWrapper);
+        String redisKey = RedisKeyUtil.getTicketKey(ticket);
+        return (LoginTicket) redisTemplate.opsForValue().get(redisKey);
     }
 
     public Map<String, Object> register(User user) {
@@ -133,6 +144,7 @@ public class UserService implements CommunityConstant {
         } else if (user.getActivationCode().equals(code)) {
             user.setStatus(1);
             userMapper.updateById(user);
+            clearCache(userId);
             return ACTIVATION_SUCCESS;
         } else return ACTIVATION_FAILURE;
     }
@@ -172,24 +184,28 @@ public class UserService implements CommunityConstant {
         loginTicket.setStatus(0);
         loginTicket.setExpired(new Date(System.currentTimeMillis() + expired * 1000));
 
-        loginTickerMapper.insert(loginTicket);
+//        loginTickerMapper.insert(loginTicket);
+        String redisKey = RedisKeyUtil.getTicketKey(loginTicket.getTicket());
+        redisTemplate.opsForValue().set(redisKey, loginTicket);
+
 
         map.put("ticket", loginTicket.getTicket());
         return map;
     }
 
     public void logout(String ticket) {
-        QueryWrapper<LoginTicket> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("ticket", ticket);
-        LoginTicket loginTicket = loginTickerMapper.selectOne(queryWrapper);
+        String redisKey = RedisKeyUtil.getTicketKey(ticket);
+        LoginTicket loginTicket = (LoginTicket) redisTemplate.opsForValue().get(redisKey);
         loginTicket.setStatus(1);
-        loginTickerMapper.update(loginTicket, queryWrapper);
+        redisTemplate.opsForValue().set(redisKey, loginTicket);
     }
 
     public int updateHeader(int userId, String headerUrl) {
         User user = userMapper.selectById(userId);
         user.setHeaderUrl(headerUrl);
-        return userMapper.updateById(user);
+        int rows = userMapper.updateById(user);
+        clearCache(userId);
+        return rows;
     }
 
     public Map<String, Object> changePassword(User user, String old_password, String new_password) {
@@ -220,6 +236,7 @@ public class UserService implements CommunityConstant {
         user.setSalt(CommunityUtil.generateUUID().substring(0, 5));
         user.setPassword(CommunityUtil.md5(new_password + user.getSalt()));
         userMapper.updateById(user);
+        clearCache(user.getId());
 
         return map;
     }
@@ -228,5 +245,25 @@ public class UserService implements CommunityConstant {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("username", username);
         return userMapper.selectOne(queryWrapper);
+    }
+
+    // 优先从缓存中取值
+    private User getCache(int userId) {
+        String redisKey = RedisKeyUtil.getUserKey(userId);
+        return (User) redisTemplate.opsForValue().get(redisKey);
+    }
+
+    // 取不到值时初始化缓存数据
+    private User initCache(int UserId) {
+        User user = userMapper.selectById(UserId);
+        String redisKey = RedisKeyUtil.getUserKey(user.getId());
+        redisTemplate.opsForValue().set(redisKey, user, 3600, TimeUnit.SECONDS);
+        return user;
+    }
+
+    // 当数据变更时，清除缓存数据
+    private void clearCache(int userId) {
+        String redisKey = RedisKeyUtil.getUserKey(userId);
+        redisTemplate.delete(redisKey);
     }
 }

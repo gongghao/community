@@ -10,5 +10,6 @@ import org.apache.ibatis.annotations.Mapper;
  * @date: 2024-06-29-20:14
  */
 @Mapper
+@Deprecated
 public interface LoginTickerMapper extends BaseMapper<LoginTicket> {
 }
