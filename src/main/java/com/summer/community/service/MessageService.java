@@ -43,6 +43,7 @@ public class MessageService {
 
         queryWrapper = new QueryWrapper<>();
         queryWrapper.in("id", ids);
+        queryWrapper.ne("from_id", 1);
         queryWrapper.orderByDesc("id");
         queryWrapper.last("limit " + String.valueOf(offset) + ", " + String.valueOf(limit));
         return messageMapper.selectList(queryWrapper);
@@ -50,14 +51,7 @@ public class MessageService {
 
     // 查询当前用户的会话数量
     public int findConversationCount(int userId) {
-        QueryWrapper<Message> queryWrapper = new QueryWrapper<>();
-        queryWrapper.select("max(id)");
-        queryWrapper.ne("status", 2);
-        queryWrapper.ne("from_id", 1);
-        queryWrapper.eq("from_id", userId).or().eq("to_id", userId);
-        queryWrapper.groupBy("conversation_id");
-        List<Map<String, Object>> mapList = messageMapper.selectMaps(queryWrapper);
-        return mapList.size();
+        return findConversations(userId, 0, 32768).size();
     }
 
     // 查询某个会话所包含的私信列表
@@ -110,4 +104,40 @@ public class MessageService {
         updateStatus(ids, 1);
     }
 
+    // 查询某个主题下最新的通知
+    public Message findLatestNotice(int userId, String topic) {
+        QueryWrapper<Message> queryWrapper = new QueryWrapper<>();
+        queryWrapper.ne("status", 2);
+        queryWrapper.eq("from_id", 1);
+        queryWrapper.eq("to_id", userId);
+        queryWrapper.eq("conversation_id", topic);
+        queryWrapper.orderByDesc("id");
+
+        List<Message> list = messageMapper.selectList(queryWrapper);
+        if(list.isEmpty())
+            return null;
+        return list.get(0);
+
+    }
+
+    // 查询某个主题所包含的通知的数量
+    public int findNoticeCount(int userId, String topic) {
+        QueryWrapper<Message> queryWrapper = new QueryWrapper<>();
+        queryWrapper.ne("status", 2);
+        queryWrapper.eq("from_id", 1);
+        queryWrapper.eq("to_id", userId);
+        queryWrapper.eq("conversation_id", topic);
+        return messageMapper.selectCount(queryWrapper);
+    }
+
+    // 查询未读的通知的数量
+    public int findNoticeUnreadCount(int userId, String topic) {
+        QueryWrapper<Message> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("status", 0);
+        queryWrapper.eq("from_id", 1);
+        queryWrapper.eq("to_id", userId);
+        if (topic != null && StringUtils.isNotBlank(topic))
+            queryWrapper.eq("conversation_id", topic);
+        return messageMapper.selectCount(queryWrapper);
+    }
 }

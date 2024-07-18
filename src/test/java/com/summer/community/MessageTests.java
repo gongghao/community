@@ -25,22 +25,32 @@ public class MessageTests {
     private MessageService messageService;
 
     @Test
-    public void selectConversationsTest()
-    {
-        List<Message> list =  messageService.findConversations(2, 0, 10);
+    public void selectConversationsTest() {
+        List<Message> list = messageService.findConversations(2, 0, 10);
         System.out.println(list);
     }
 
     @Test
-    public void selectConversationCountTest()
-    {
-        int count = messageService.findConversationCount(2);
+    public void selectConversationCountTest() {
+        int count = messageService.findConversationCount(5);
         System.out.println(count);
     }
 
     @Test
-    public void selectLetterCountTest(){
+    public void selectLetterCountTest() {
         int count = messageService.findLetterCount("2_3");
         System.out.println(count);
+    }
+
+    @Test
+    public void systemLetterTest() {
+        List<Message> list = messageService.findConversations(5, 0, 10);
+        System.out.println(list);
+    }
+
+    @Test
+    public void selectLikeNoticeTest() {
+        Message message = messageService.findLatestNotice(3, "like");
+        System.out.println(message);
     }
 }
