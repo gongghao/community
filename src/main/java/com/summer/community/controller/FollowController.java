@@ -1,7 +1,9 @@
 package com.summer.community.controller;
 
+import com.summer.community.entity.Event;
 import com.summer.community.entity.Page;
 import com.summer.community.entity.User;
+import com.summer.community.event.EventProducer;
 import com.summer.community.service.FollowService;
 import com.summer.community.service.UserService;
 import com.summer.community.util.CommunityConstant;
@@ -35,11 +37,23 @@ public class FollowController implements CommunityConstant {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private EventProducer eventProducer;
+
     @RequestMapping(path = "/follow", method = RequestMethod.POST)
     @ResponseBody
     public String follow(int entityType, int entityId) {
         User user = hostHolder.getUser();
         followService.follow(user.getId(), entityType, entityId);
+
+        // 触发关注事件
+        Event event = new Event()
+                .setTopic(TOPIC_FOLLOW)
+                .setUserId(user.getId())
+                .setEntityType(entityType)
+                .setEntityId(entityId)
+                .setEntityUserId(entityId);
+        eventProducer.fireEvent(event);
 
         return CommunityUtil.getJSONString(0, "已关注！");
     }
@@ -66,8 +80,8 @@ public class FollowController implements CommunityConstant {
         page.setRows((int) followService.findFolloweeCount(userId, ENTITY_TYPE_USER));
 
         List<Map<String, Object>> userList = followService.findFollowees(userId, page.getOffset(), page.getLimit());
-        if(userList != null)
-            for (Map<String, Object> map : userList){
+        if (userList != null)
+            for (Map<String, Object> map : userList) {
                 User u = (User) map.get("user");
                 map.put("hasFollowed", hasFollowed(u.getId()));
             }
@@ -89,8 +103,8 @@ public class FollowController implements CommunityConstant {
         page.setRows((int) followService.findFollowerCount(ENTITY_TYPE_USER, userId));
 
         List<Map<String, Object>> userList = followService.findFollowers(userId, page.getOffset(), page.getLimit());
-        if(userList != null)
-            for (Map<String, Object> map : userList){
+        if (userList != null)
+            for (Map<String, Object> map : userList) {
                 User u = (User) map.get("user");
                 map.put("hasFollowed", hasFollowed(u.getId()));
             }
@@ -100,8 +114,8 @@ public class FollowController implements CommunityConstant {
         return "/site/follower";
     }
 
-    private boolean hasFollowed(int userId){
-        if(hostHolder.getUser() == null)
+    private boolean hasFollowed(int userId) {
+        if (hostHolder.getUser() == null)
             return false;
 
         return followService.hasFollowed(hostHolder.getUser().getId(), ENTITY_TYPE_USER, userId);
