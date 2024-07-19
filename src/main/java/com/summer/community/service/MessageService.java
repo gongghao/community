@@ -114,7 +114,7 @@ public class MessageService {
         queryWrapper.orderByDesc("id");
 
         List<Message> list = messageMapper.selectList(queryWrapper);
-        if(list.isEmpty())
+        if (list.isEmpty())
             return null;
         return list.get(0);
 
@@ -139,5 +139,17 @@ public class MessageService {
         if (topic != null && StringUtils.isNotBlank(topic))
             queryWrapper.eq("conversation_id", topic);
         return messageMapper.selectCount(queryWrapper);
+    }
+
+    // 查询某个主题所包含的通知列表
+    public List<Message> findNotices(int userId, String topic, int offset, int limit) {
+        QueryWrapper<Message> queryWrapper  = new QueryWrapper();
+        queryWrapper.ne("status", 2);
+        queryWrapper.eq("from_id", 1);
+        queryWrapper.eq("to_id" ,userId);
+        queryWrapper.eq("conversation_id", topic);
+        queryWrapper.orderByDesc("create_time");
+        queryWrapper.last("limit " + String.valueOf(offset) + ", " + String.valueOf(limit));
+        return messageMapper.selectList(queryWrapper);
     }
 }
