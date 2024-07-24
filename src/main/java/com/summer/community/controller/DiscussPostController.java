@@ -1,6 +1,7 @@
 package com.summer.community.controller;
 
 import com.summer.community.entity.*;
+import com.summer.community.event.EventProducer;
 import com.summer.community.service.CommentService;
 import com.summer.community.service.DiscussPostService;
 import com.summer.community.service.LikeService;
@@ -17,8 +18,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.*;
 
-import static com.summer.community.util.CommunityConstant.ENTITY_TYPE_COMMENT;
-import static com.summer.community.util.CommunityConstant.ENTITY_TYPE_POST;
+import static com.summer.community.util.CommunityConstant.*;
 import static java.lang.Integer.MAX_VALUE;
 
 /**
@@ -45,6 +45,9 @@ public class DiscussPostController {
     @Autowired
     private LikeService likeService;
 
+    @Autowired
+    private EventProducer eventProducer;
+
     @RequestMapping(path = "/add", method = RequestMethod.POST)
     @ResponseBody
     public String addDiscussPost(String title, String content) {
@@ -59,8 +62,13 @@ public class DiscussPostController {
         post.setCreateTime(new Date());
         discussPostService.addDiscussPost(post);
 
-//        Event event = new Event()
-//                .setTopic();
+        Event event = new Event()
+                .setTopic(TOPIC_PUBLISH)
+                .setUserId(user.getId())
+                .setEntityType(ENTITY_TYPE_POST)
+                .setEntityId(post.getId());
+        eventProducer.fireEvent(event);
+
         // 报错的情况，将来统一处理
         return CommunityUtil.getJSONString(0, "发布成功!");
     }
