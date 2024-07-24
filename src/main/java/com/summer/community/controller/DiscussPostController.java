@@ -1,9 +1,6 @@
 package com.summer.community.controller;
 
-import com.summer.community.entity.Comment;
-import com.summer.community.entity.DiscussPost;
-import com.summer.community.entity.Page;
-import com.summer.community.entity.User;
+import com.summer.community.entity.*;
 import com.summer.community.service.CommentService;
 import com.summer.community.service.DiscussPostService;
 import com.summer.community.service.LikeService;
@@ -62,6 +59,8 @@ public class DiscussPostController {
         post.setCreateTime(new Date());
         discussPostService.addDiscussPost(post);
 
+//        Event event = new Event()
+//                .setTopic();
         // 报错的情况，将来统一处理
         return CommunityUtil.getJSONString(0, "发布成功!");
     }

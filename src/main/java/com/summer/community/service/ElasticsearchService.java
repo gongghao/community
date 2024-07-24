@@ -51,6 +51,9 @@ public class ElasticsearchService {
         discussPostRepository.save(post);
     }
 
+    public void deleteDiscussPost(int id) {
+        discussPostRepository.deleteById(id);
+    }
     public List<DiscussPost> searchDiscussPost(String keyword, int current, int limit) {
         NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
                 .withQuery(QueryBuilders.multiMatchQuery(keyword, "title", "content"))
