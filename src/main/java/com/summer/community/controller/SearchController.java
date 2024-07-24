@@ -38,6 +38,14 @@ public class SearchController implements CommunityConstant {
         //搜索帖子
         List<DiscussPost> searchResult =
                 elasticsearchService.searchDiscussPost(keyword, page.getCurrent() - 1, page.getLimit());
+        System.out.println(searchResult.size());
+        System.out.println(searchResult.size());
+        System.out.println(searchResult.size());
+        System.out.println(searchResult.size());
+        System.out.println(searchResult.size());
+        System.out.println(page.getOffset());
+        System.out.println(page.getLimit());
+        System.out.println(page.getCurrent());
         List<Map<String, Object>> discussPosts = new ArrayList<>();
         if (searchResult != null) {
             for (DiscussPost post : searchResult) {
@@ -48,6 +56,7 @@ public class SearchController implements CommunityConstant {
                 map.put("user", userService.findUserById(post.getUserId()));
                 //点赞
                 map.put("likeCount", likeService.findEntityLikeCount(ENTITY_TYPE_POST, post.getId()));
+                discussPosts.add(map);
             }
         }
 
