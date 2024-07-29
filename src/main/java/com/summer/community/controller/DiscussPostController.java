@@ -108,7 +108,7 @@ public class DiscussPostController {
                 likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_COMMENT, comment.getId());
                 commentVo.put("likeCount", likeCount);
                 likeStatus = hostHolder.getUser() == null ? 0 :
-                        likeService.findEntityLikeStatus(hostHolder.getUser().getId(), ENTITY_TYPE_COMMENT,comment.getId());
+                        likeService.findEntityLikeStatus(hostHolder.getUser().getId(), ENTITY_TYPE_COMMENT, comment.getId());
                 commentVo.put("likeStatus", likeStatus);
 
                 // 回复列表
@@ -128,7 +128,7 @@ public class DiscussPostController {
                         likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_COMMENT, reply.getId());
                         replyVo.put("likeCount", likeCount);
                         likeStatus = hostHolder.getUser() == null ? 0 :
-                                likeService.findEntityLikeStatus(hostHolder.getUser().getId(), ENTITY_TYPE_COMMENT,reply.getId());
+                                likeService.findEntityLikeStatus(hostHolder.getUser().getId(), ENTITY_TYPE_COMMENT, reply.getId());
                         replyVo.put("likeStatus", likeStatus);
 
                         replyVoList.add(replyVo);
@@ -145,5 +145,71 @@ public class DiscussPostController {
         model.addAttribute("comments", commentVoList);
 
         return "/site/discuss-detail";
+    }
+
+    // 置顶
+    @RequestMapping(path = "/top", method = RequestMethod.POST)
+    @ResponseBody
+    public String setTop(int id) {
+        User user = hostHolder.getUser();
+        System.out.println(user.getUsername());
+        System.out.println(user.getType());
+        for(int i = 0; i< 10; i++)
+            System.out.println("");
+
+        if (user == null)
+            return CommunityUtil.getJSONString(403, "用户未登录");
+        else if (user.getType() != 2)
+            return CommunityUtil.getJSONString(401, "权限不足");
+
+        Event event = new Event()
+                .setTopic(TOPIC_PUBLISH)
+                .setUserId(user.getId())
+                .setEntityType(ENTITY_TYPE_POST)
+                .setEntityId(id);
+        eventProducer.fireEvent(event);
+        discussPostService.updateType(id, 1);
+
+        return CommunityUtil.getJSONString(0);
+    }
+
+    @RequestMapping(path = "/wonderful", method = RequestMethod.POST)
+    @ResponseBody
+    public String setWonderful(int id) {
+        User user = hostHolder.getUser();
+        if (user == null)
+            return CommunityUtil.getJSONString(403, "用户未登录");
+        else if (user.getType() != 2)
+            return CommunityUtil.getJSONString(401, "权限不足");
+
+        Event event = new Event()
+                .setTopic(TOPIC_PUBLISH)
+                .setUserId(user.getId())
+                .setEntityType(ENTITY_TYPE_POST)
+                .setEntityId(id);
+        eventProducer.fireEvent(event);
+        discussPostService.updateStatus(id, 1);
+
+        return CommunityUtil.getJSONString(0);
+    }
+
+    @RequestMapping(path = "/delete", method = RequestMethod.POST)
+    @ResponseBody
+    public String setDelete(int id) {
+        User user = hostHolder.getUser();
+        if (user == null)
+            return CommunityUtil.getJSONString(403, "用户未登录");
+        else if (user.getType() != 1)
+            return CommunityUtil.getJSONString(401, "权限不足");
+
+        Event event = new Event()
+                .setTopic(TOPIC_DELETE)
+                .setUserId(user.getId())
+                .setEntityType(ENTITY_TYPE_POST)
+                .setEntityId(id);
+        eventProducer.fireEvent(event);
+        discussPostService.updateStatus(id, 2);
+
+        return CommunityUtil.getJSONString(0);
     }
 }

@@ -1,5 +1,7 @@
 package com.summer.community.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -17,6 +19,7 @@ import java.util.Date;
 @Document(indexName = "discusspost", shards = 6, replicas = 3)
 public class DiscussPost {
     @Id
+    @TableId(value = "id", type = IdType.AUTO)
     private int id;
     @Field(type = FieldType.Integer)
     private int userId;

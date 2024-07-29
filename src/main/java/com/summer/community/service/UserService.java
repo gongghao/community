@@ -190,6 +190,7 @@ public class UserService implements CommunityConstant {
 
 
         map.put("ticket", loginTicket.getTicket());
+        map.put("role", user.getType());
         return map;
     }
 

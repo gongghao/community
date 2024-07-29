@@ -182,7 +182,12 @@ public class LoginController implements CommunityConstant {
             Cookie cookie = new Cookie("ticket", map.get("ticket").toString());
             cookie.setPath(contextPath);
             cookie.setMaxAge(expiredSeconds);
+            Cookie cookie1 = new Cookie("role", map.get("role").toString());
+            cookie1.setPath(contextPath);
+            cookie1.setMaxAge(expiredSeconds);
+            response.addCookie(cookie1);
             response.addCookie(cookie);
+
             return "redirect:/index";
         } else {
             model.addAttribute("usernameMsg", map.get("usernameMsg"));

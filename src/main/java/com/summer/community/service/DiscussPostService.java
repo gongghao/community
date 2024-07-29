@@ -73,4 +73,16 @@ public class DiscussPostService {
         return discussPostMapper.updateById(post);
     }
 
+
+    public int updateType(int id, int type) {
+        DiscussPost discussPost = discussPostMapper.selectById(id);
+        discussPost.setType(type);
+        return discussPostMapper.updateById(discussPost);
+    }
+
+    public int updateStatus(int id, int status) {
+        DiscussPost discussPost = discussPostMapper.selectById(id);
+        discussPost.setStatus(status);
+        return discussPostMapper.updateById(discussPost);
+    }
 }

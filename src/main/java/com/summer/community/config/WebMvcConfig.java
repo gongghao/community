@@ -1,9 +1,6 @@
 package com.summer.community.config;
 
-import com.summer.community.controller.interceptor.AlphaInterceptor;
-import com.summer.community.controller.interceptor.LoginRequiredInterceptor;
-import com.summer.community.controller.interceptor.LoginTicketInterceptor;
-import com.summer.community.controller.interceptor.MessageInterceptor;
+import com.summer.community.controller.interceptor.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -29,6 +26,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private MessageInterceptor messageInterceptor;
 
+    @Autowired
+    private EventInterceptor eventInterceptor;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(alphaInterceptor)
@@ -37,6 +37,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         registry.addInterceptor(loginTicketInterceptor)
                 .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpeg", "/**/*.jpg");
+//
+//        registry.addInterceptor(eventInterceptor)
+//                .addPathPatterns("/discuss/delete", "/discuss/wonderful", "/discuss/top", "/comment/add/*");
 
         registry.addInterceptor(loginRequiredInterceptor)
                 .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpeg", "/**/*.jpg");

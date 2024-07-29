@@ -3,10 +3,12 @@ package com.summer.community.controller;
 import com.summer.community.entity.Comment;
 import com.summer.community.entity.DiscussPost;
 import com.summer.community.entity.Event;
+import com.summer.community.entity.User;
 import com.summer.community.event.EventProducer;
 import com.summer.community.service.CommentService;
 import com.summer.community.service.DiscussPostService;
 import com.summer.community.util.CommunityConstant;
+import com.summer.community.util.CommunityUtil;
 import com.summer.community.util.HostHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -37,6 +39,10 @@ public class CommentController implements CommunityConstant {
 
     @RequestMapping(path = "/add/{discussPostId}", method = RequestMethod.POST)
     public String addComment(@PathVariable("discussPostId") int discussPostId, Comment comment) {
+        User user = hostHolder.getUser();
+        if (user == null)
+            return "redirect:/login";
+
         comment.setUserId(hostHolder.getUser().getId());
         comment.setStatus(0);
         comment.setCreateTime(new Date());
