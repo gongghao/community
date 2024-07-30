@@ -27,7 +27,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private MessageInterceptor messageInterceptor;
 
     @Autowired
-    private EventInterceptor eventInterceptor;
+    private DataInterceptor dataInterceptor;
+
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -46,5 +47,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         registry.addInterceptor(messageInterceptor)
                 .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpeg", "/**/*.jpg");
+
+        registry.addInterceptor(dataInterceptor)
+                .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpeg", "/**/*.jpg");
+
     }
 }
