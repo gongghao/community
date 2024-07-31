@@ -7,7 +7,9 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -30,8 +32,24 @@ public class DataService {
 
     //将指定的IP计入UV
     public void recordUV(String ip) {
-        String RedisKey = RedisKeyUtil.getUVKey(df.format(new Date()));
-        redisTemplate.opsForHyperLogLog().add(RedisKey, ip);
+//        String RedisKey = RedisKeyUtil.getUVKey(df.format(new Date()));
+//        redisTemplate.opsForHyperLogLog().add(RedisKey, ip);
+
+        redisTemplate.execute(new SessionCallback() {
+            @Override
+            public Object execute(RedisOperations operations) throws DataAccessException {
+                String RedisKey = RedisKeyUtil.getUVKey(df.format(new Date()));
+
+                boolean isMember = operations.opsForSet().isMember(RedisKey, ip);
+
+                operations.multi();
+
+                if (!isMember)
+                    operations.opsForSet().add(RedisKey, ip);
+
+                return operations.exec();
+            }
+        });
     }
 
     //统计指定日期范围内的UV
@@ -41,20 +59,20 @@ public class DataService {
         }
 
         //整理该日期内的key
-        List<String> keyList = new ArrayList<>();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(start);
+        long res = 0;
         while(!calendar.getTime().after(end)) {
             String key = RedisKeyUtil.getUVKey(df.format(calendar.getTime()));
-            keyList.add(key);
+            res += redisTemplate.opsForSet().size(key);
             calendar.add(Calendar.DATE, 1);
         }
 
         //合并这些key
-        String redisKey = RedisKeyUtil.getUVKey(df.format(start), df.format(end));
-        redisTemplate.opsForHyperLogLog().union(redisKey, keyList.toString());
+//        String redisKey = RedisKeyUtil.getUVKey(df.format(start), df.format(end));
+//        redisTemplate.opsForHyperLogLog().union(redisKey, keyList.toString());
 
-        return redisTemplate.opsForHyperLogLog().size(redisKey);
+        return res;
     }
 
     public void recordDAU(int userId) {

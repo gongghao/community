@@ -31,8 +31,15 @@ public class DataInterceptor implements HandlerInterceptor {
         dataService.recordUV(ip);
 
         User user = hostHolder.getUser();
-        if (user != null) {
+        if(user != null)
             dataService.recordDAU(user.getId());
+
+        String url = request.getServletPath();
+        if (url.equals("/data")) {
+            if (user == null || user.getType() != 1) {
+                response.sendRedirect(request.getContextPath() + "/index");
+                return false;
+            }
         }
         return true;
     }

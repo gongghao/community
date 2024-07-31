@@ -1,6 +1,9 @@
 package com.summer.community.controller;
 
+import com.summer.community.entity.User;
 import com.summer.community.service.DataService;
+import com.summer.community.util.CommunityUtil;
+import com.summer.community.util.HostHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -30,10 +33,10 @@ public class DataController {
                         @DateTimeFormat(pattern = "yyyy-MM-dd") Date end, Model model) {
         long uv = dataService.calculateUV(start, end);
         model.addAttribute("uvResult", uv);
-        System.out.println(start);
-        System.out.println(end);
-        for (int i = 0; i < 10; i++)
-            System.out.println("");
+//        System.out.println(start);
+//        System.out.println(end);
+//        for (int i = 0; i < 10; i++)
+//            System.out.println("");
         model.addAttribute("uvStartDate", start);
         model.addAttribute("uvEndDate", end);
         return "forward:/data";

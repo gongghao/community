@@ -152,10 +152,10 @@ public class DiscussPostController {
     @ResponseBody
     public String setTop(int id) {
         User user = hostHolder.getUser();
-        System.out.println(user.getUsername());
-        System.out.println(user.getType());
-        for(int i = 0; i< 10; i++)
-            System.out.println("");
+//        System.out.println(user.getUsername());
+//        System.out.println(user.getType());
+//        for(int i = 0; i< 10; i++)
+//            System.out.println("");
 
         if (user == null)
             return CommunityUtil.getJSONString(403, "用户未登录");
