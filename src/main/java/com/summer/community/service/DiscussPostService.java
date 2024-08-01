@@ -85,4 +85,10 @@ public class DiscussPostService {
         discussPost.setStatus(status);
         return discussPostMapper.updateById(discussPost);
     }
+
+    public int updateScore(int id, double score) {
+        DiscussPost discussPost = discussPostMapper.selectById(id);
+        discussPost.setScore(score);
+        return discussPostMapper.updateById(discussPost);
+    }
 }
