@@ -24,13 +24,16 @@ public class DiscussPostService {
     @Autowired
     private SensitiveFilter sensitiveFilter;
 
-    public List<DiscussPost> findDisscussPost(int userId, int offset, int limit) {
+    public List<DiscussPost> findDisscussPost(int userId, int offset, int limit, int orderMode) {
         QueryWrapper<DiscussPost> queryWrapper = new QueryWrapper<>();
         queryWrapper.ne("status", 2);
         if (userId != 0)
             queryWrapper.eq("user_id", userId);
-        queryWrapper.orderByDesc("create_time");
-        queryWrapper.orderByDesc("type");
+        if (orderMode == 0) {
+            queryWrapper.orderByDesc("type", "create_time");
+        } else if (orderMode == 1) {
+            queryWrapper.orderByDesc("type", "score", "create_time");
+        }
         queryWrapper.last("limit " + String.valueOf(offset) + ", " + String.valueOf(limit));
         return discussPostMapper.selectList(queryWrapper);
 //        if (discussPostList.size() >= offset + limit)
