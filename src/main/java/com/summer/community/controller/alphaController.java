@@ -1,6 +1,7 @@
 package com.summer.community.controller;
 
 import com.summer.community.dao.AlphaDao;
+import com.summer.community.entity.Result;
 import com.summer.community.service.AlphaService;
 import com.summer.community.util.CommunityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,9 @@ public class alphaController {
     @RequestMapping("/hello")
     @ResponseBody
     public String sayHello() {
-        return "Hello, SpringBoot.";
+        Result result = Result.ok("test");
+        result.data("int", 1);
+        return result.toString();
     }
 
     @RequestMapping("/data")

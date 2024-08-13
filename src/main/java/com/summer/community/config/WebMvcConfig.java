@@ -37,19 +37,19 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/register", "/login");
 
         registry.addInterceptor(loginTicketInterceptor)
-                .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpeg", "/**/*.jpg");
+                .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpeg", "/**/*.jpg", "/hello");
 //
 //        registry.addInterceptor(eventInterceptor)
 //                .addPathPatterns("/discuss/delete", "/discuss/wonderful", "/discuss/top", "/comment/add/*");
 
         registry.addInterceptor(loginRequiredInterceptor)
-                .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpeg", "/**/*.jpg");
+                .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpeg", "/**/*.jpg", "/hello");
 
         registry.addInterceptor(messageInterceptor)
-                .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpeg", "/**/*.jpg");
+                .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpeg", "/**/*.jpg", "/hello");
 
         registry.addInterceptor(dataInterceptor)
-                .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpeg", "/**/*.jpg");
+                .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpeg", "/**/*.jpg", "/hello");
 
     }
 }

@@ -77,4 +77,7 @@ public interface CommunityConstant {
      * 权限：版主
      */
     int AUTHORITY_MODERATOR = 2;
+    //返回码
+    public int SUCCESS = 20000;
+    public int ERROR = 20001;
 }
