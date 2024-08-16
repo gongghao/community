@@ -1,7 +1,9 @@
 package com.summer.community.controller;
 
+import com.baomidou.mybatisplus.extension.api.R;
 import com.summer.community.entity.Event;
 import com.summer.community.entity.Page;
+import com.summer.community.entity.Result;
 import com.summer.community.entity.User;
 import com.summer.community.event.EventProducer;
 import com.summer.community.service.FollowService;
@@ -43,6 +45,8 @@ public class FollowController implements CommunityConstant {
     @RequestMapping(path = "/follow", method = RequestMethod.POST)
     @ResponseBody
     public String follow(int entityType, int entityId) {
+        Result result = Result.ok("/follow.post");
+
         User user = hostHolder.getUser();
         followService.follow(user.getId(), entityType, entityId);
 
@@ -55,25 +59,40 @@ public class FollowController implements CommunityConstant {
                 .setEntityUserId(entityId);
         eventProducer.fireEvent(event);
 
-        return CommunityUtil.getJSONString(0, "已关注！");
+        result.setSuccess(true);
+        result.setCode(0);
+        result.setMessage("已关注");
+        return result.toString();
+        //return CommunityUtil.getJSONString(0, "已关注！");
     }
 
     @RequestMapping(path = "/unfollow", method = RequestMethod.POST)
     @ResponseBody
     public String unfollow(int entityType, int entityId) {
+        Result result = Result.ok("unfollow.post");
+
         User user = hostHolder.getUser();
 
         followService.unfollow(user.getId(), entityType, entityId);
 
-        return CommunityUtil.getJSONString(0, "已取消关注！");
+        result.setSuccess(true);
+        result.setCode(0);
+        result.setMessage("已取消关注");
+        return result.toString();
+        //return CommunityUtil.getJSONString(0, "已取消关注！");
     }
 
     @RequestMapping(path = "/followees/{userId}", method = RequestMethod.GET)
-    public String getFollowees(@PathVariable("userId") int userId, Page page, Model model) {
+    @ResponseBody
+    public String getFollowees(@PathVariable("userId") int userId, Model model) {
+        Result result = Result.ok("/followees/{userId}.get");
+        Page page = new Page();
+
         User user = userService.findUserById(userId);
         if (user == null)
             throw new RuntimeException("该用户不存在!");
-        model.addAttribute("user", user);
+        //model.addAttribute("user", user);
+        result.data("user", user);
 
         page.setLimit(5);
         page.setPath("/followees/" + userId);
@@ -85,18 +104,26 @@ public class FollowController implements CommunityConstant {
                 User u = (User) map.get("user");
                 map.put("hasFollowed", hasFollowed(u.getId()));
             }
-        model.addAttribute("users", userList);
-        model.addAttribute("loginUser", hostHolder.getUser());
+        //model.addAttribute("users", userList);
+        //model.addAttribute("loginUser", hostHolder.getUser());
+        result.data("users", userList);
+        result.data("loginUser", hostHolder.getUser());
 
-        return "/site/followee";
+        //return "/site/followee";
+        return result.toString();
     }
 
     @RequestMapping(path = "/followers/{userId}", method = RequestMethod.GET)
-    public String getFollowers(@PathVariable("userId") int userId, Page page, Model model) {
+    @ResponseBody
+    public String getFollowers(@PathVariable("userId") int userId, Model model) {
+        Result result = Result.ok("/followers/{userId}.get");
+        Page page = new Page();
+
         User user = userService.findUserById(userId);
         if (user == null)
             throw new RuntimeException("该用户不存在!");
-        model.addAttribute("user", user);
+        //model.addAttribute("user", user);
+        result.data("user", user);
 
         page.setLimit(5);
         page.setPath("/followers/" + userId);
@@ -108,10 +135,13 @@ public class FollowController implements CommunityConstant {
                 User u = (User) map.get("user");
                 map.put("hasFollowed", hasFollowed(u.getId()));
             }
-        model.addAttribute("users", userList);
-        model.addAttribute("loginUser", hostHolder.getUser());
+        //model.addAttribute("users", userList);
+        //model.addAttribute("loginUser", hostHolder.getUser());
+        result.data("users", userList);
+        result.data("loginUser", hostHolder.getUser());
 
-        return "/site/follower";
+        //return "/site/follower";
+        return result.toString();
     }
 
     private boolean hasFollowed(int userId) {
