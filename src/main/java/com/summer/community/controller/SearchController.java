@@ -2,6 +2,7 @@ package com.summer.community.controller;
 
 import com.summer.community.entity.DiscussPost;
 import com.summer.community.entity.Page;
+import com.summer.community.entity.Result;
 import com.summer.community.service.ElasticsearchService;
 import com.summer.community.service.LikeService;
 import com.summer.community.service.UserService;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,18 +36,22 @@ public class SearchController implements CommunityConstant {
     private UserService userService;
 
     @RequestMapping(path = "/search", method = RequestMethod.GET)
-    public String search(String keyword, Page page, Model model) {
+    @ResponseBody
+    public String search(String keyword, Model model) {
+        Result result = Result.ok("/search");
+        Page page = new Page();
+
         //搜索帖子
         List<DiscussPost> searchResult =
                 elasticsearchService.searchDiscussPost(keyword, page.getCurrent() - 1, page.getLimit());
-        System.out.println(searchResult.size());
-        System.out.println(searchResult.size());
-        System.out.println(searchResult.size());
-        System.out.println(searchResult.size());
-        System.out.println(searchResult.size());
-        System.out.println(page.getOffset());
-        System.out.println(page.getLimit());
-        System.out.println(page.getCurrent());
+//        System.out.println(searchResult.size());
+//        System.out.println(searchResult.size());
+//        System.out.println(searchResult.size());
+//        System.out.println(searchResult.size());
+//        System.out.println(searchResult.size());
+//        System.out.println(page.getOffset());
+//        System.out.println(page.getLimit());
+//        System.out.println(page.getCurrent());
         List<Map<String, Object>> discussPosts = new ArrayList<>();
         if (searchResult != null) {
             for (DiscussPost post : searchResult) {
@@ -60,12 +66,15 @@ public class SearchController implements CommunityConstant {
             }
         }
 
-        model.addAttribute("discussPosts", discussPosts);
-        model.addAttribute("keyword", keyword);
+        //model.addAttribute("discussPosts", discussPosts);
+        //model.addAttribute("keyword", keyword);
+        result.data("discussPosts", discussPosts);
+        result.data("keyword", keyword);
 
         page.setPath("/search?keyword=" + keyword);
         page.setRows(searchResult == null ? 0 : searchResult.size());
 
+        result.data("page", page);
         return "/site/search";
     }
 }
