@@ -1,6 +1,8 @@
 package com.summer.community.controller;
 
+import com.baomidou.mybatisplus.extension.api.R;
 import com.summer.community.entity.Event;
+import com.summer.community.entity.Result;
 import com.summer.community.entity.User;
 import com.summer.community.event.EventProducer;
 import com.summer.community.service.LikeService;
@@ -41,6 +43,8 @@ public class LikeController implements CommunityConstant {
     @RequestMapping(path = "/like", method = RequestMethod.POST)
     @ResponseBody
     public String like(int entityType, int entityId, int entityUserId, int postId) {
+        Result result = Result.ok("/like.post");
+
         User user = hostHolder.getUser();
 
         // 点赞
@@ -50,9 +54,11 @@ public class LikeController implements CommunityConstant {
         // 状态
         int likeStatus = likeService.findEntityLikeStatus(user.getId(), entityType, entityId);
 
-        Map<String, Object> map = new HashMap<>();
-        map.put("likeCount", likeCount);
-        map.put("likeStatus", likeStatus);
+//        Map<String, Object> map = new HashMap<>();
+//        map.put("likeCount", likeCount);
+//        map.put("likeStatus", likeStatus);
+        result.data("likeCount", likeCount);
+        result.data("likeStatus", likeStatus);
 
         // 触发点赞事件
         if(likeStatus == 1){
@@ -71,7 +77,8 @@ public class LikeController implements CommunityConstant {
             redisTemplate.opsForSet().add(redisKey, postId);
         }
 
-        return CommunityUtil.getJSONString(0, null, map);
+        //return CommunityUtil.getJSONString(0, null, map);
+        return result.toString();
     }
 
 }
