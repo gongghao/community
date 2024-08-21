@@ -33,7 +33,7 @@ public class DataController {
     @RequestMapping(path = "/data/uv", method = RequestMethod.POST)
     @ResponseBody
     public String getUV(@DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
-                        @DateTimeFormat(pattern = "yyyy-MM-dd") Date end, Model model) {
+                        @DateTimeFormat(pattern = "yyyy-MM-dd") Date end) {
         Result result = Result.ok("/data/uv.post");
         long uv = dataService.calculateUV(start, end);
   //      model.addAttribute("uvResult", uv);

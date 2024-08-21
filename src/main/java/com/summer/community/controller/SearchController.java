@@ -37,7 +37,7 @@ public class SearchController implements CommunityConstant {
 
     @RequestMapping(path = "/search", method = RequestMethod.GET)
     @ResponseBody
-    public String search(String keyword, Model model) {
+    public String search(String keyword) {
         Result result = Result.ok("/search");
         Page page = new Page();
 

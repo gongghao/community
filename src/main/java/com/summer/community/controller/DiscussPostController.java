@@ -94,7 +94,7 @@ public class DiscussPostController {
 
     @RequestMapping(path = "/detail/{discussPostId}", method = RequestMethod.GET)
     @ResponseBody
-    public String getDiscussPost(@PathVariable("discussPostId") int discussPostId, Model model) {
+    public String getDiscussPost(@PathVariable("discussPostId") int discussPostId) {
         Result result = Result.ok("/detail/{discussPostId}.get");
         Page page = new Page();
         // 帖子

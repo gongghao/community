@@ -84,7 +84,7 @@ public class FollowController implements CommunityConstant {
 
     @RequestMapping(path = "/followees/{userId}", method = RequestMethod.GET)
     @ResponseBody
-    public String getFollowees(@PathVariable("userId") int userId, Model model) {
+    public String getFollowees(@PathVariable("userId") int userId) {
         Result result = Result.ok("/followees/{userId}.get");
         Page page = new Page();
 
