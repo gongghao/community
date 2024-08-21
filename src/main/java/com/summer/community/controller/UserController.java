@@ -1,6 +1,7 @@
 package com.summer.community.controller;
 
 import com.summer.community.annotation.LoginRequired;
+import com.summer.community.entity.Result;
 import com.summer.community.entity.User;
 import com.summer.community.mapper.DiscussPostMapper;
 import com.summer.community.mapper.UserMapper;
@@ -68,17 +69,26 @@ public class UserController implements CommunityConstant {
 
     @LoginRequired
     @RequestMapping(path = "/upload", method = RequestMethod.POST)
-    public String uploadHeader(MultipartFile headerImage, Model model) {
+    @ResponseBody
+    public String uploadHeader(MultipartFile headerImage) {
+        Result result = Result.ok("/upload.post");
+
         if (headerImage == null) {
-            model.addAttribute("error", "您还未选择图片");
-            return "/site/setting";
+//            model.addAttribute("error", "您还未选择图片");
+            //return "/site/setting";
+            result.setSuccess(false);
+            result.setMessage("您还未选择图片!");
+            return result.toString();
         }
 
         String filename = headerImage.getOriginalFilename();
         String suffix = filename.substring(filename.lastIndexOf("."));
         if (StringUtils.isBlank(suffix)) {
-            model.addAttribute("error", "文件格式错误");
-            return "/site/setting";
+            //model.addAttribute("error", "文件格式错误");
+            //return "/site/setting";
+            result.setSuccess(false);
+            result.setMessage("文件格式错误!");
+            return result.toString();
         }
 
         filename = CommunityUtil.generateUUID() + suffix;
@@ -94,7 +104,9 @@ public class UserController implements CommunityConstant {
         String headerUrl = domain + contextPath + "/user/header/" + filename;
         userService.updateHeader(user.getId(), headerUrl);
 
-        return "redirect:/index";
+        result.data("target", "/index");
+        return result.toString();
+        //return "redirect:/index";
     }
 
     @RequestMapping(path = "/header/{fileName}", method = RequestMethod.GET)
@@ -117,46 +129,66 @@ public class UserController implements CommunityConstant {
     }
 
     @RequestMapping(path = "/changePassword", method = RequestMethod.POST)
-    public String changePassword(String old_password, String new_password, Model model) {
+    @ResponseBody
+    public String changePassword(String old_password, String new_password) {
+        Result result = Result.ok("/changePassword.post");
+
         User user = hostHolder.getUser();
         Map<String, Object> map = userService.changePassword(user, old_password, new_password);
         if (map == null || map.isEmpty()) {
-            model.addAttribute("msg", "Password changed successfully!");
-            return "redirect:/index";
+            //model.addAttribute("msg", "Password changed successfully!");
+            //return "redirect:/index";
+            result.data("msg", "Password changed successfully!");
+            result.data("target", "/index");
+            return result.toString();
+
         } else {
-            model.addAttribute("oldMsg", map.get("oldMsg"));
-            model.addAttribute("newMsg", map.get("newMsg"));
-            return "/site/setting";
+            //model.addAttribute("oldMsg", map.get("oldMsg"));
+            //model.addAttribute("newMsg", map.get("newMsg"));
+            //return "/site/setting";
+            result.data("oldMsg", map.get("oldMsg"));
+            result.data("newMsg", map.get("newMsg"));
+            return result.toString();
         }
     }
 
     // 个人主页
     @RequestMapping(path = "/profile/{userId}", method = RequestMethod.GET)
-    public String getProfilePage(@PathVariable("userId") int userId, Model model) {
+    @ResponseBody
+    public String getProfilePage(@PathVariable("userId") int userId) {
+        Result result = Result.ok("/profile/{userId}.get");
+
         User user = userService.findUserById(userId);
         if (user == null) {
             throw new RuntimeException("该用户不存在");
         }
 
         // 用户
-        model.addAttribute("user", user);
-        model.addAttribute("loginUser", hostHolder.getUser());
+        //model.addAttribute("user", user);
+        //model.addAttribute("loginUser", hostHolder.getUser());
+        result.data("user", user);
+        result.data("loginUser", hostHolder.getUser());
         // 点赞数量
         int likeCount = likeService.findUserLikeCount(userId);
-        model.addAttribute("likeCount", likeCount);
+        //model.addAttribute("likeCount", likeCount);
+        result.data("likeCount", likeCount);
 
         // 关注数量
         long followeeCount = followService.findFolloweeCount(userId, ENTITY_TYPE_USER);
-        model.addAttribute("followeeCount", followeeCount);
+        //model.addAttribute("followeeCount", followeeCount);
+        result.data("followeeCount", followeeCount);
         // 粉丝数量
         long followerCount = followService.findFollowerCount(ENTITY_TYPE_USER, userId);
-        model.addAttribute("followerCount", followerCount);
+        //model.addAttribute("followerCount", followerCount);
+        result.data("followerCount", followerCount);
         // 是否已关注
         boolean hasFollowed = false;
         if(hostHolder.getUser() != null)
             hasFollowed = followService.hasFollowed(hostHolder.getUser().getId(), ENTITY_TYPE_USER, userId);
-        model.addAttribute("hasFollowed", hasFollowed);
+        //model.addAttribute("hasFollowed", hasFollowed);
+        result.data("hasFollowed", hasFollowed);
 
-        return "/site/profile";
+        //return "/site/profile";
+        return result.toString();
     }
 }
