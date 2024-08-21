@@ -74,7 +74,7 @@ public class SearchController implements CommunityConstant {
         page.setPath("/search?keyword=" + keyword);
         page.setRows(searchResult == null ? 0 : searchResult.size());
 
-        result.data("page", page);
+        result.data("Page", page);
         return "/site/search";
     }
 }

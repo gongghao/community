@@ -110,6 +110,7 @@ public class FollowController implements CommunityConstant {
         result.data("loginUser", hostHolder.getUser());
 
         //return "/site/followee";
+        result.data("Page", page);
         return result.toString();
     }
 
@@ -141,6 +142,7 @@ public class FollowController implements CommunityConstant {
         result.data("loginUser", hostHolder.getUser());
 
         //return "/site/follower";
+        result.data("Page", page);
         return result.toString();
     }
 
