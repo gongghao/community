@@ -1,9 +1,6 @@
 package com.summer.community.controller;
 
-import com.summer.community.entity.Comment;
-import com.summer.community.entity.DiscussPost;
-import com.summer.community.entity.Event;
-import com.summer.community.entity.User;
+import com.summer.community.entity.*;
 import com.summer.community.event.EventProducer;
 import com.summer.community.service.CommentService;
 import com.summer.community.service.DiscussPostService;
@@ -43,10 +40,17 @@ public class CommentController implements CommunityConstant {
     private RedisTemplate redisTemplate;
 
     @RequestMapping(path = "/add/{discussPostId}", method = RequestMethod.POST)
+    @ResponseBody
     public String addComment(@PathVariable("discussPostId") int discussPostId, Comment comment) {
+        Result result = Result.ok("/add/{discussPostId}.post");
+
         User user = hostHolder.getUser();
-        if (user == null)
-            return "redirect:/login";
+        if (user == null) {
+            result.setCode(399);
+            result.setMessage("未登录");
+            result.setSuccess(false);
+            return result.toString();
+        }
 
         comment.setUserId(hostHolder.getUser().getId());
         comment.setStatus(0);
@@ -84,7 +88,10 @@ public class CommentController implements CommunityConstant {
             redisTemplate.opsForSet().add(redisKey, discussPostId);
         }
 
-        return "redirect:/discuss/detail/" + discussPostId;
+        result.setSuccess(true);
+        result.setCode(0);
+        result.setMessage("成功发布帖子");
+        return result.toString();
     }
 
 }
