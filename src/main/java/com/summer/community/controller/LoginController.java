@@ -1,6 +1,7 @@
 package com.summer.community.controller;
 
 import com.google.code.kaptcha.Producer;
+import com.summer.community.entity.Result;
 import com.summer.community.entity.User;
 import com.summer.community.service.UserService;
 import com.summer.community.util.CommunityConstant;
@@ -60,34 +61,54 @@ public class LoginController implements CommunityConstant {
     }
 
     @RequestMapping(path = "/register", method = RequestMethod.POST)
-    public String register(Model model, User user) {
+    @ResponseBody
+    public String register(User user) {
+        Result result = Result.ok("/register.post");
+
         Map<String, Object> map = userService.register(user);
         if (map == null || map.isEmpty()) {
-            model.addAttribute("msg", "Register Success, email has been sent to you.");
-            model.addAttribute("target", "/index");
-            return "/site/operate-result";
+            //model.addAttribute("msg", "Register Success, email has been sent to you.");
+            //model.addAttribute("target", "/index");
+            result.data("mes", "Register Success, email has been sent to you.");
+            result.data("target", "/index");
+            //return "/site/operate-result";
+            return result.toString();
         } else {
-            model.addAttribute("usernameMsg", map.get("usernameMsg"));
-            model.addAttribute("passwordMsg", map.get("passwordMsg"));
-            model.addAttribute("emailMsg", map.get("emailMsg"));
-            return "/site/register";
+            //model.addAttribute("usernameMsg", map.get("usernameMsg"));
+            //model.addAttribute("passwordMsg", map.get("passwordMsg"));
+            //model.addAttribute("emailMsg", map.get("emailMsg"));
+            result.data("usernameMsg", map.get("usernameMsg"));
+            result.data("passwordMsg", map.get("passwordMsg"));
+            result.data("emailMsg", map.get("emailMsg"));
+            //return "/site/register";
+            return result.toString();
         }
     }
 
     @RequestMapping(path = "/activation/{userId}/{code}", method = RequestMethod.GET)
-    public String activation(Model model, @PathVariable("userId") int userId, @PathVariable("code") String code) {
-        int result = userService.activation(userId, code);
-        if (result == ACTIVATION_SUCCESS) {
-            model.addAttribute("msg", "Activate successfully, get starting!");
-            model.addAttribute("target", "/login");
-        } else if (result == ACTIVATION_REPEAT) {
-            model.addAttribute("msg", "Your account has be activated.");
-            model.addAttribute("target", "/index");
+    @ResponseBody
+    public String activation(@PathVariable("userId") int userId, @PathVariable("code") String code) {
+        Result result = Result.ok("/activation/{userId}/{code}.get");
+
+        int end = userService.activation(userId, code);
+        if (end == ACTIVATION_SUCCESS) {
+            //model.addAttribute("msg", "Activate successfully, get starting!");
+            //model.addAttribute("target", "/login");
+            result.data("meg", "Activate successfully, get starting!");
+            result.data("target", "/login");
+        } else if (end == ACTIVATION_REPEAT) {
+           // model.addAttribute("msg", "Your account has be activated.");
+            //model.addAttribute("target", "/index");
+            result.data("meg", "Your account had be activated.");
+            result.data("target", "/index");
         } else {
-            model.addAttribute("msg", "Activate failed, your activation code is wrong.");
-            model.addAttribute("target", "/index");
+            //model.addAttribute("msg", "Activate failed, your activation code is wrong.");
+            //model.addAttribute("target", "/index");
+            result.data("msg", "Activate failed, your activation code is wrong.");
+            result.data("target", "/index");
         }
-        return "/site/operate-result";
+        //return "/site/operate-result";
+        return result.toString();
     }
 
 //    @RequestMapping(path = "/kaptcha", method = RequestMethod.GET)
@@ -110,6 +131,7 @@ public class LoginController implements CommunityConstant {
 
     @RequestMapping(path = "/kaptcha", method = RequestMethod.GET)
     public void getKaptcha(HttpServletResponse response) {
+
         // 生成验证码
         String text = kaptchaProducer.createText();
         BufferedImage image = kaptchaProducer.createImage(text);
@@ -162,17 +184,22 @@ public class LoginController implements CommunityConstant {
 //    }
 
     @RequestMapping(path = "/login", method = RequestMethod.POST)
+    @ResponseBody
     public String login(String username, String password, String code,
-                        boolean rememberme, Model model, HttpServletResponse response,
+                        boolean rememberme, HttpServletResponse response,
                         @CookieValue("kaptchaOwner") String kaptchaOwner) {
+        Result result = Result.ok("/login.post");
+
         String kaptcha = null;
         if (StringUtils.isNotBlank(kaptchaOwner)) {
             String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
             kaptcha = (String) redisTemplate.opsForValue().get(redisKey);
         }
         if (StringUtils.isBlank(kaptcha) || StringUtils.isBlank(code) || !kaptcha.equalsIgnoreCase(code)) {
-            model.addAttribute("codeMsg", "验证码错误!");
-            return "/site/login";
+            //model.addAttribute("codeMsg", "验证码错误!");
+            result.data("codeMsg", "验证码错误！");
+            //return "/site/login";
+            return result.toString();
         }
 
         int expiredSeconds = rememberme ? REMEMBER_EXPIRED_SECONDS : DEFAULT_EXPIRED_SECONDS;
@@ -188,17 +215,27 @@ public class LoginController implements CommunityConstant {
             response.addCookie(cookie1);
             response.addCookie(cookie);
 
-            return "redirect:/index";
+            //return "redirect:/index";
+            result.data("target", "/index");
+            return result.toString();
         } else {
-            model.addAttribute("usernameMsg", map.get("usernameMsg"));
-            model.addAttribute("passwordMsg", map.get("passwordMsg"));
-            return "/site/login";
+            //model.addAttribute("usernameMsg", map.get("usernameMsg"));
+            //model.addAttribute("passwordMsg", map.get("passwordMsg"));
+            result.data("usernameMsg", map.get("usernameMsg"));
+            result.data("passwordMsg", map.get("passwordMsg"));
+            //return "/site/login";
+            result.data("target", "/site/login");
+            return result.toString();
         }
     }
 
     @RequestMapping(path = "/logout", method = RequestMethod.GET)
+    @ResponseBody
     public String logout(@CookieValue("ticket") String ticket) {
+        Result result = Result.ok("/logout.get");
         userService.logout(ticket);
-        return "redirect:/login";
+        //return "redirect:/login";
+        result.data("target", "/login");
+        return result.toString();
     }
 }
