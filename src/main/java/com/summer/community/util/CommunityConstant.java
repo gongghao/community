@@ -80,5 +80,5 @@ public interface CommunityConstant {
     //返回码
     public int SUCCESS = 20000;
     public int ERROR = 20001;
-    //399 未登录
+    //403 未登录
 }

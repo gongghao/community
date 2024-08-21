@@ -46,7 +46,7 @@ public class CommentController implements CommunityConstant {
 
         User user = hostHolder.getUser();
         if (user == null) {
-            result.setCode(399);
+            result.setCode(403);
             result.setMessage("未登录");
             result.setSuccess(false);
             return result.toString();

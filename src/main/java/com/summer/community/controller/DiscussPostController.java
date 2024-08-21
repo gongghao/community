@@ -58,6 +58,7 @@ public class DiscussPostController {
     @ResponseBody
     public String addDiscussPost(String title, String content) {
         Result result = Result.ok("/add.post");
+
         User user = hostHolder.getUser();
         if (user == null) {
            // return CommunityUtil.getJSONString(403, "用户未登录");
