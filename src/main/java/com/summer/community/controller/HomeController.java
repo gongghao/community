@@ -2,6 +2,7 @@ package com.summer.community.controller;
 
 import com.summer.community.entity.DiscussPost;
 import com.summer.community.entity.Page;
+import com.summer.community.entity.Result;
 import com.summer.community.entity.User;
 import com.summer.community.service.DiscussPostService;
 import com.summer.community.service.LikeService;
@@ -35,7 +36,11 @@ public class HomeController implements CommunityConstant {
     private LikeService likeService;
 
     @RequestMapping(path = "/index", method = RequestMethod.GET)
-    public String getIndexPage(Model model, Page page, @RequestParam(name = "orderMode", defaultValue = "0") int orderMode) {
+    @ResponseBody
+    public String getIndexPage(@RequestParam(name = "orderMode", defaultValue = "0") int orderMode) {
+        Result result = Result.ok("/index.get");
+        Page page = new Page();
+
         page.setRows(discussPostService.findDiscussPostRows(0));
         page.setPath("/index?orderMode=" + orderMode);
 
@@ -54,8 +59,12 @@ public class HomeController implements CommunityConstant {
                 discussPosts.add(map);
             }
         }
-        model.addAttribute("discussPosts", discussPosts);
-        model.addAttribute("orderMode", orderMode);
+        //model.addAttribute("discussPosts", discussPosts);
+        //model.addAttribute("orderMode", orderMode);
+        result.data("disscussPosts", discussPosts);
+        result.data("orderMode", orderMode);
+
+        result.data("Page", page);
         return "/index";
     }
 
