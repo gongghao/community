@@ -4,6 +4,7 @@ import com.alibaba.druid.sql.visitor.functions.Nil;
 import com.alibaba.fastjson.JSONObject;
 import com.summer.community.entity.Message;
 import com.summer.community.entity.Page;
+import com.summer.community.entity.Result;
 import com.summer.community.entity.User;
 import com.summer.community.service.MessageService;
 import com.summer.community.service.UserService;
@@ -41,7 +42,10 @@ public class MessageController implements CommunityConstant {
 
     // 私信列表
     @RequestMapping(path = "/letter/list", method = RequestMethod.GET)
-    public String getLetterList(Model model, Page page) {
+    public String getLetterList() {
+        Result result = Result.ok("/letter/list");
+        Page page = new Page();
+
         User user = hostHolder.getUser();
         // 分页信息
         page.setLimit(5);
@@ -63,19 +67,29 @@ public class MessageController implements CommunityConstant {
 
                 conversations.add(map);
             }
-        model.addAttribute("conversations", conversations);
+        //model.addAttribute("conversations", conversations);
+        result.data("conversations", conversations);
 
         // 查询未读消息数量
         int letterUnreadCount = messageService.findLetterUnreadCount(user.getId(), null);
-        model.addAttribute("letterUnreadCount", letterUnreadCount);
+        //model.addAttribute("letterUnreadCount", letterUnreadCount);
+        result.data("letterUnreadCount", letterUnreadCount);
         int noticeUnreadCount = messageService.findNoticeUnreadCount(user.getId(), null);
-        model.addAttribute("noticeUnreadCount", noticeUnreadCount);
+        //model.addAttribute("noticeUnreadCount", noticeUnreadCount);
+        result.data("noticeUnreadCount", noticeUnreadCount);
 
-        return "/site/letter";
+        //return "/site/letter";
+        result.data("target", "/site/letter");
+        result.data("Page", page);
+        return result.toString();
     }
 
     @RequestMapping(path = "/letter/detail/{conversationId}", method = RequestMethod.GET)
-    public String getLetterDetail(@PathVariable("conversationId") String conversationId, Page page, Model model) {
+    @ResponseBody
+    public String getLetterDetail(@PathVariable("conversationId") String conversationId) {
+        Result result = Result.ok("/letter/detail/{conversationId}.get");
+        Page page = new Page();
+
         // 分页信息
         page.setLimit(5);
         page.setPath("/letter/detail/" + conversationId);
@@ -91,17 +105,22 @@ public class MessageController implements CommunityConstant {
                 map.put("fromUser", userService.findUserById(message.getFromId()));
                 letters.add(map);
             }
-        model.addAttribute("letters", letters);
+        //model.addAttribute("letters", letters);
+        result.data("letters", letters);
 
         // 私信目标
-        model.addAttribute("target", getLetterTarget(conversationId));
+        //model.addAttribute("target", getLetterTarget(conversationId));
+        result.data("targetUser", getLetterTarget(conversationId));
 
         // 设置已读
         List<Integer> ids = getLetterIds(letterList);
         if (!ids.isEmpty())
             messageService.readMessage(ids);
 
-        return "/site/letter-detail";
+        result.data("Page", page);
+        result.data("target", "/site/letter-detail");
+        //return "/site/letter-detail";
+        return result.toString();
     }
 
     private User getLetterTarget(String conversationId) {
@@ -117,6 +136,8 @@ public class MessageController implements CommunityConstant {
     @RequestMapping(path = "/letter/send", method = RequestMethod.POST)
     @ResponseBody
     public String sendLetter(String toName, String content) {
+        Result result = Result.ok("/letter/send.post");
+
         User target = userService.findUserByName(toName);
         if (target == null)
             return CommunityUtil.getJSONString(1, "目标用户不存在");
@@ -131,7 +152,8 @@ public class MessageController implements CommunityConstant {
         message.setCreateTime(new Date());
         messageService.addMessage(message);
 
-        return CommunityUtil.getJSONString(0);
+        //return CommunityUtil.getJSONString(0);
+        return result.toString();
     }
 
     private List<Integer> getLetterIds(List<Message> letters) {
@@ -144,7 +166,10 @@ public class MessageController implements CommunityConstant {
     }
 
     @RequestMapping(path = "/notice/list", method = RequestMethod.GET)
-    public String getNoticeList(Model model) {
+    @ResponseBody
+    public String getNoticeList() {
+        Result result = Result.ok("/notice/list.get");
+
         User user = hostHolder.getUser();
 
         // 查询评论类的通知
@@ -168,7 +193,8 @@ public class MessageController implements CommunityConstant {
             messageVo.put("unread", unread);
         } else
             messageVo.put("message", null);
-        model.addAttribute("commentNotice", messageVo);
+        //model.addAttribute("commentNotice", messageVo);
+        result.data("commentNotice",messageVo);
 
         // 查询点赞类的通知
         message = messageService.findLatestNotice(user.getId(), TOPIC_LIKE);
@@ -191,7 +217,8 @@ public class MessageController implements CommunityConstant {
             messageVo.put("unread", unread);
         } else
             messageVo.put("message", null);
-        model.addAttribute("likeNotice", messageVo);
+        //model.addAttribute("likeNotice", messageVo);
+        result.data("likeNotice", messageVo);
 
         // 查询关注类的通知
         message = messageService.findLatestNotice(user.getId(), TOPIC_FOLLOW);
@@ -212,20 +239,29 @@ public class MessageController implements CommunityConstant {
             int unread = messageService.findNoticeUnreadCount(user.getId(), TOPIC_FOLLOW);
             messageVo.put("unread", unread);
         } else
-            messageVo.put("message", null);
-        model.addAttribute("followNotice", messageVo);
+;            messageVo.put("message", null);
+        //model.addAttribute("followNotice", messageVo);
+        result.data("followNotice", messageVo);
 
         // 查询未读消息数量
         int letterUnreadCount = messageService.findLetterUnreadCount(user.getId(), null);
-        model.addAttribute("letterUnreadCount", letterUnreadCount);
+        //model.addAttribute("letterUnreadCount", letterUnreadCount);
+        result.data("letterUnreadCount", letterUnreadCount);
         int noticeUnreadCount = messageService.findNoticeUnreadCount(user.getId(), null);
-        model.addAttribute("noticeUnreadCount", noticeUnreadCount);
+        //model.addAttribute("noticeUnreadCount", noticeUnreadCount);
+        result.data("noticeUnreadCount", noticeUnreadCount);
 
-        return "/site/notice";
+        result.data("target", "/site/notice");
+        return result.toString();
+        //return "/site/notice";
     }
 
     @RequestMapping(path = "/notice/detail/{topic}", method = RequestMethod.GET)
-    public String getNoticeDetail(@PathVariable("topic") String topic, Page page, Model model) {
+    @ResponseBody
+    public String getNoticeDetail(@PathVariable("topic") String topic) {
+        Result result = Result.ok("/notice/detail/{topic}.get");
+        Page page = new Page();
+
         User user = hostHolder.getUser();
 
         page.setLimit(5);
@@ -252,14 +288,17 @@ public class MessageController implements CommunityConstant {
 
                 noticeVoList.add(map);
             }
-        model.addAttribute("notices", noticeVoList);
+        //model.addAttribute("notices", noticeVoList);
+        result.data("notices", noticeVoList);
 
         // 设置已读
         List<Integer> ids = getLetterIds(noticeList);
         if (!ids.isEmpty())
             messageService.readMessage(ids);
 
-        return "/site/notice-detail";
+        //return "/site/notice-detail";
+        result.data("target", "/site/notice-detail");
+        return result.toString();
     }
 
 }
