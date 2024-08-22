@@ -69,7 +69,7 @@ public class LoginController implements CommunityConstant {
         if (map == null || map.isEmpty()) {
             //model.addAttribute("msg", "Register Success, email has been sent to you.");
             //model.addAttribute("target", "/index");
-            result.data("mes", "Register Success, email has been sent to you.");
+            result.data("msg", "Register Success, email has been sent to you.");
             result.data("target", "/index");
             //return "/site/operate-result";
             return result.toString();
@@ -80,6 +80,7 @@ public class LoginController implements CommunityConstant {
             result.data("usernameMsg", map.get("usernameMsg"));
             result.data("passwordMsg", map.get("passwordMsg"));
             result.data("emailMsg", map.get("emailMsg"));
+            result.data("target", "/site/register");
             //return "/site/register";
             return result.toString();
         }
@@ -99,7 +100,7 @@ public class LoginController implements CommunityConstant {
         } else if (end == ACTIVATION_REPEAT) {
            // model.addAttribute("msg", "Your account has be activated.");
             //model.addAttribute("target", "/index");
-            result.data("meg", "Your account had be activated.");
+            result.data("meg", "Your account had been activated.");
             result.data("target", "/index");
         } else {
             //model.addAttribute("msg", "Activate failed, your activation code is wrong.");
@@ -199,6 +200,7 @@ public class LoginController implements CommunityConstant {
             //model.addAttribute("codeMsg", "验证码错误!");
             result.data("codeMsg", "验证码错误！");
             //return "/site/login";
+            result.data("target", "/site//login");
             return result.toString();
         }
 

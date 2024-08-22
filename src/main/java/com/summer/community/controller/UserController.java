@@ -148,6 +148,7 @@ public class UserController implements CommunityConstant {
             //return "/site/setting";
             result.data("oldMsg", map.get("oldMsg"));
             result.data("newMsg", map.get("newMsg"));
+            result.data("target", "/site/setting")
             return result.toString();
         }
     }

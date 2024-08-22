@@ -53,7 +53,7 @@ public class DataController {
     @RequestMapping(path = "/data/dau", method = RequestMethod.POST)
     @ResponseBody
     public String getDAU(@DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
-                         @DateTimeFormat(pattern = "yyyy-MM-dd") Date end, Model model
+                         @DateTimeFormat(pattern = "yyyy-MM-dd") Date end
     ) {
         Result result = Result.ok("/data/dau.post");
         long dau = dataService.calculateDAU(start, end);

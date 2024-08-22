@@ -139,8 +139,13 @@ public class MessageController implements CommunityConstant {
         Result result = Result.ok("/letter/send.post");
 
         User target = userService.findUserByName(toName);
-        if (target == null)
-            return CommunityUtil.getJSONString(1, "目标用户不存在");
+        if (target == null) {
+            result.setCode(1);
+            result.setSuccess(false);
+            result.setMessage("目标用户不存在");
+            return result.toString();
+            //return CommunityUtil.getJSONString(1, "目标用户不存在");
+        }
         Message message = new Message();
         message.setFromId(hostHolder.getUser().getId());
         message.setToId(target.getId());
