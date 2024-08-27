@@ -153,6 +153,29 @@ public class UserController implements CommunityConstant {
         }
     }
 
+    @RequestMapping(path = "/changeUsername", method = RequestMethod.POST)
+    @ResponseBody
+    public String changeUsername(String username) {
+        Result result = Result.ok("/changeUsername.post");
+
+        User user = hostHolder.getUser();
+        Map<String, Object> map = userService.changeUsername(user, username);
+        if (map == null || map.isEmpty()) {
+            //model.addAttribute("msg", "Password changed successfully!");
+            //return "redirect:/index";
+            result.data("Msg", "Username changed successfully!");
+            result.data("target", "/index");
+            return result.toString();
+        } else {
+            //model.addAttribute("oldMsg", map.get("oldMsg"));
+            //model.addAttribute("newMsg", map.get("newMsg"));
+            //return "/site/setting";
+            result.data("Msg", map.get("Msg"));
+            result.data("target", "/site/setting");
+            return result.toString();
+        }
+    }
+
     // 个人主页
     @RequestMapping(path = "/profile/{userId}", method = RequestMethod.GET)
     @ResponseBody

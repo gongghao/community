@@ -78,6 +78,28 @@ public class CommentService {
         return rows;
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRED)
+    public int deleteComment(Comment comment) {
+        if (comment == null) {
+            throw new IllegalArgumentException("参数不能为空");
+        }
+
+        // 删除帖子
+        commentMapper.deleteById(comment.getId());
+        int rows = commentMapper.selectCount(null);
+
+        // 更新帖子评论数量
+        if (comment.getEntityType() == ENTITY_TYPE_POST) {
+            QueryWrapper<Comment> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("entity_type", ENTITY_TYPE_POST);
+            queryWrapper.eq("entity_id", comment.getEntityId());
+            int count = commentMapper.selectCount(queryWrapper);
+            discussPostService.updateCommentCount(comment.getEntityId(), count);
+        }
+
+        return rows;
+    }
+
     public Comment findCommentById(int id) {
         return commentMapper.selectById(id);
     }

@@ -90,7 +90,47 @@ public class CommentController implements CommunityConstant {
 
         result.setSuccess(true);
         result.setCode(0);
-        result.setMessage("成功发布帖子");
+        result.setMessage("成功发布评论");
+        return result.toString();
+    }
+
+    @RequestMapping(path = "/delete/{discussPostId}", method = RequestMethod.POST)
+    @ResponseBody
+    public String deleteComment(@PathVariable("discussPostId") int discussPostId, Comment comment) {
+        Result result = Result.ok("/delete/{discussPostId}.post");
+
+        User user = hostHolder.getUser();
+        if (user == null) {
+            result.setCode(403);
+            result.setMessage("未登录");
+            result.setSuccess(false);
+            return result.toString();
+        }
+        else if (user.getId() != AUTHORITY_ADMIN && user.getId() != comment.getUserId()) {
+            result.setCode(401);
+            result.setMessage("权限不足！");
+            result.setSuccess(false);
+            return result.toString();
+        }
+
+        commentService.deleteComment(comment);
+
+        if (comment.getEntityType() == ENTITY_TYPE_POST) {
+            //触发发帖事件
+            Event event = new Event()
+                    .setTopic(TOPIC_PUBLISH)
+                    .setUserId(comment.getUserId())
+                    .setEntityType(ENTITY_TYPE_POST)
+                    .setEntityId(discussPostId);
+            eventProducer.fireEvent(event);
+            //计算帖子分数
+            String redisKey = RedisKeyUtil.getPostScoreKey();
+            redisTemplate.opsForSet().add(redisKey, discussPostId);
+        }
+
+        result.setSuccess(true);
+        result.setCode(0);
+        result.setMessage("成功删除帖子");
         return result.toString();
     }
 

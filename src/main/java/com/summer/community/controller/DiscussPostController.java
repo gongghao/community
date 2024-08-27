@@ -270,7 +270,7 @@ public class DiscussPostController {
             result.setMessage("用户未登录");
             return result.toString();
         }
-        else if (user.getType() != 1) {
+        else if (user.getType() != 1 && user.getId() != discussPostService.findDiscussPostById(id).getUserId()) {
             //return CommunityUtil.getJSONString(401, "权限不足");
             result.setSuccess(false);
             result.setCode(401);

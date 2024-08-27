@@ -242,6 +242,35 @@ public class UserService implements CommunityConstant {
         return map;
     }
 
+    public Map<String, Object> changeUsername(User user, String username) {
+        Map<String, Object> map = new HashMap<>();
+        //deal with empty
+        if (user == null)
+            throw new IllegalArgumentException("Param is Empty!");
+        else if (StringUtils.isBlank(username)) {
+            map.put("Msg", "昵称为空！");
+            return map;
+        }
+        else if (user.getUsername().equals(username)) {
+            map.put("Msg", "昵称不能与原昵称相同！");
+            return map;
+        }
+
+        // validate user
+        User findUser = findUserByName(username);
+        if (findUser != null) {
+            map.put("Msg", "该昵称已被占用！");
+            return map;
+        }
+
+        // change username
+        user.setUsername(username);
+        userMapper.updateById(user);
+        clearCache(user.getId());
+
+        return map;
+    }
+
     public User findUserByName(String username) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("username", username);
